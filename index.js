@@ -5,43 +5,27 @@ localhost:8080/contact-me should take users to contact-me.html
 404.html should display any time the user tries to go to a page not listed above.
 */
 
-const http = require('node:http');
-const fs = require('node:fs');
-const path = require('node:path');
+const express = require("express");
 
-const hostname = '127.0.0.1';
+const app = express();
 const port = 8080;
 
-const server = http.createServer((req, res) => {
-
-    const uri = req.url === "/" ? "/index" : req.url;
-    const parsedPathname = path.parse(req.url).pathname;
-
-    fs.readFile(`.${uri}.html`, "utf-8", (error, data) => {
-        if (error) {
-            // Errno -2 = file not found
-            if (error.errno = -2) {
-                fs.readFile('./404.html', 'utf-8', (error, data) => {
-                    res.setHeader('Content-Type', 'text/html');
-                    res.statusCode = 404;
-                    res.end(data);
-                });
-            }
-        }
-        else {
-            res.setHeader('Content-Type', 'text/html');
-            res.statusCode = 200;
-            res.end(data);
-        }
-    })
-
-    /*
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    res.end('Hello, World!');
-    */
+app.get("/", (req, res) => {
+    res.sendFile("index.html", {root: __dirname});
 });
 
-server.listen(port, hostname, () => {
-    console.log(`Server running at http://${hostname}:${port}/`);
-});     
+app.get("/about", (req, res) => {
+    res.sendFile("about.html", {root: __dirname});
+});
+
+app.get("/contact-me", (req, res) => {
+    res.sendFile("contact-me.html", {root: __dirname});
+});
+
+app.all("/*", (req, res) => {
+    res.status(404).sendFile("404.html", {root: __dirname});
+});
+
+app.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+});
